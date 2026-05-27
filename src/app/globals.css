@@ -1,0 +1,389 @@
+@import "tailwindcss";
+
+:root {
+  /* Layout — must match Navbar min-height + safe area */
+  --nav-height: 5.5rem; /* 88px: generous mobile (accounts for any wrapping) */
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-height: 4.75rem; /* 76px: single-row desktop */
+  }
+}
+
+@theme {
+  /* NYXN Color System */
+  --color-nyxn-bg: #060910;
+  --color-nyxn-surface: #0a0f1e;
+  --color-nyxn-surface-2: #0f1629;
+  --color-nyxn-border: #1a2848;
+  --color-nyxn-border-bright: #243660;
+  --color-nyxn-accent: #00c8f0;
+  --color-nyxn-accent-hover: #33d6f5;
+  --color-nyxn-accent-dim: rgba(0, 200, 240, 0.12);
+  --color-nyxn-accent-glow: rgba(0, 200, 240, 0.25);
+  --color-nyxn-text: #ddeeff;
+  --color-nyxn-text-dim: #8ba4c8;
+  --color-nyxn-muted: #4a6490;
+  --color-nyxn-alive: #22d3a0;
+  --color-nyxn-dead: #f04060;
+  --color-nyxn-unknown: #5b7194;
+
+  /* Typography */
+  --font-display: var(--font-display, "Orbitron", monospace);
+  --font-mono: var(--font-mono, "JetBrains Mono", monospace);
+  --font-body: var(--font-mono, system-ui, sans-serif);
+
+  /* Shadows */
+  --shadow-card: 0 0 0 1px rgba(0, 200, 240, 0.06), 0 4px 32px rgba(0, 0, 0, 0.5);
+  --shadow-card-hover: 0 0 0 1px rgba(0, 200, 240, 0.3), 0 8px 48px rgba(0, 200, 240, 0.12), 0 0 80px rgba(0, 200, 240, 0.04);
+  --shadow-glow: 0 0 30px rgba(0, 200, 240, 0.25);
+  --shadow-input: 0 0 0 1px rgba(0, 200, 240, 0.15), 0 0 20px rgba(0, 200, 240, 0.08);
+}
+
+/* Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 6px rgba(34, 211, 160, 0.6); }
+  50% { box-shadow: 0 0 16px rgba(34, 211, 160, 1), 0 0 30px rgba(34, 211, 160, 0.4); }
+}
+
+@keyframes cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+@keyframes grid-fade-in {
+  from { opacity: 0; transform: translateY(32px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes noise-shift {
+  0%, 100% { transform: translate(0, 0); }
+  10% { transform: translate(-1px, 1px); }
+  20% { transform: translate(1px, -1px); }
+  30% { transform: translate(-1px, -1px); }
+  40% { transform: translate(1px, 1px); }
+  50% { transform: translate(-1px, 0); }
+  60% { transform: translate(1px, 0); }
+  70% { transform: translate(0, 1px); }
+  80% { transform: translate(0, -1px); }
+  90% { transform: translate(1px, -1px); }
+}
+
+/* Base reset */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-nyxn-bg);
+  color: var(--color-nyxn-text);
+  font-family: var(--font-mono), "JetBrains Mono", monospace;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Scanlines overlay — global subtle effect */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--color-nyxn-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-nyxn-border-bright); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-nyxn-muted); }
+
+/* Focus */
+:focus-visible {
+  outline: 1px solid var(--color-nyxn-accent);
+  outline-offset: 3px;
+}
+
+/* Utility classes */
+.font-display { font-family: var(--font-display), "Orbitron", monospace; }
+.font-mono { font-family: var(--font-mono), "JetBrains Mono", monospace; }
+
+/* Card entrance animation with stagger via CSS custom prop */
+.card-animate {
+  animation: grid-fade-in 0.5s ease both;
+  animation-delay: calc(var(--card-index, 0) * 60ms);
+}
+
+/* Alive status pulse */
+.status-alive-dot {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Search cursor blink */
+.cursor-blink::after {
+  content: "_";
+  animation: cursor-blink 1s step-end infinite;
+  color: var(--color-nyxn-accent);
+}
+
+/* Navbar glass */
+.glass-nav {
+  background: rgba(6, 9, 16, 0.65);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 200, 240, 0.08);
+  box-shadow: 0 1px 0 rgba(0, 200, 240, 0.05), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Card glass */
+.glass-card {
+  background: rgba(10, 15, 30, 0.5);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(0, 200, 240, 0.08);
+  box-shadow:
+    0 0 0 1px rgba(0, 200, 240, 0.04),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+}
+
+.glass-card:hover {
+  background: rgba(10, 15, 30, 0.6);
+  border-color: rgba(0, 200, 240, 0.22);
+  box-shadow:
+    0 0 0 1px rgba(0, 200, 240, 0.2),
+    0 16px 48px rgba(0, 0, 0, 0.7),
+    0 0 60px rgba(0, 200, 240, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+/* Search glass — indigo-tinted so it stands out from the dark bg */
+.glass-search {
+  background: rgba(10, 15, 30, 0.72);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(0, 200, 240, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* Search scanline — bottom border shimmer, same keyframe as footer */
+@keyframes search-scan {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateX(400%); opacity: 0; }
+}
+
+.search-scanline {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 200, 240, 0.6),
+    rgba(180, 240, 255, 0.95),
+    rgba(0, 200, 240, 0.6),
+    transparent
+  );
+  animation: search-scan 3s ease-in-out infinite;
+}
+
+/* Search field — idle: indigo surface + soft cyan border */
+.search-field-idle {
+  background: rgba(14, 20, 48, 0.85);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  box-shadow:
+    0 0 0 1px rgba(0, 200, 240, 0.08),
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 0 40px rgba(60, 80, 160, 0.08);
+}
+.search-field-idle:focus-within {
+  box-shadow:
+    0 0 0 1px rgba(0, 200, 240, 0.18),
+    0 4px 24px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(0, 200, 240, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-color: rgba(0, 200, 240, 0.6) !important;
+}
+
+/* Search field — active: brighter bg + glow ring */
+.search-field-active {
+  background: rgba(8, 16, 42, 0.92);
+  backdrop-filter: blur(20px) saturate(200%);
+  -webkit-backdrop-filter: blur(20px) saturate(200%);
+  box-shadow:
+    0 0 0 3px rgba(0, 200, 240, 0.12),
+    0 0 0 1px rgba(0, 200, 240, 0.35),
+    0 8px 32px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(0, 200, 240, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 0 60px rgba(0, 200, 240, 0.04);
+}
+
+/* Sticky search dock — sits below fixed nav without overlap */
+.search-dock {
+  position: sticky;
+  top: calc(var(--nav-height) + 0.5rem);
+  z-index: 30;
+  margin-bottom: 2rem;
+  padding-top: 0.5rem;
+  padding-bottom: 1.5rem;
+  scroll-margin-top: calc(var(--nav-height) + 1rem);
+  /*
+   * Fully opaque — no transparent fade zone so first card row is never clipped.
+   * Sticky + z-index handles covering cards that scroll underneath.
+   */
+  background: var(--color-nyxn-bg);
+}
+
+.footer-section {
+  /*
+   * Noticeably darker-blue than page (#060910 = rgb 6,9,16).
+   * rgb(10,16,40) blue-channel gap of 24 = clearly visible at dark monitors.
+   */
+  background: rgba(10, 16, 40, 1);
+  border-top: 1px solid rgba(0, 200, 240, 0.35);
+  box-shadow:
+    0 -1px 0 rgba(0, 200, 240, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.footer-content {
+  padding-left:   clamp(2rem, 8vw, 8rem);
+  padding-right:  clamp(2rem, 8vw, 8rem);
+  padding-top:    2.5rem;
+  padding-bottom: 2.5rem;
+}
+
+/* Top bar: full-width 2px cyan gradient */
+.footer-top-bar {
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(0, 200, 240, 0.5) 30%,
+    rgba(0, 200, 240, 0.7) 50%,
+    rgba(0, 200, 240, 0.5) 70%,
+    transparent 100%
+  );
+}
+
+/* Shimmer that travels left → right */
+@keyframes footer-scan {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(350%); opacity: 0; }
+}
+
+.footer-scanline {
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(0, 200, 240, 0.9),
+    rgba(180, 240, 255, 1),
+    rgba(0, 200, 240, 0.9),
+    transparent
+  );
+  animation: footer-scan 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+/* Outer glass bar */
+.pagination-bar {
+  background: rgba(10, 15, 30, 0.7);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 200, 240, 0.14);
+  box-shadow:
+    0 0 0 1px rgba(0, 200, 240, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* PREV / NEXT buttons */
+.pagination-nav {
+  color: var(--color-nyxn-text-dim);
+  transition: background 0.18s ease, color 0.18s ease;
+}
+.pagination-nav:hover:not(:disabled) {
+  background: rgba(0, 200, 240, 0.1);
+  color: var(--color-nyxn-accent);
+}
+.pagination-nav:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+/* Inactive page button */
+.pagination-page {
+  color: var(--color-nyxn-text-dim);
+  background: transparent;
+  transition: background 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+}
+.pagination-page:hover {
+  background: rgba(0, 200, 240, 0.1);
+  color: var(--color-nyxn-accent);
+}
+
+/* Active page — filled solid accent */
+.pagination-page-active {
+  background: var(--color-nyxn-accent);
+  color: var(--color-nyxn-bg);
+  box-shadow:
+    0 0 0 2px rgba(0, 200, 240, 0.35),
+    0 0 20px rgba(0, 200, 240, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Divider between prev/numbers/next */
+.pagination-sep {
+  background: linear-gradient(180deg, transparent, var(--color-nyxn-border-bright), transparent);
+}
+
+/* Generic glass surface */
+.glass-surface {
+  background: rgba(10, 15, 30, 0.45);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 200, 240, 0.1);
+}
